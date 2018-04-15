@@ -6,10 +6,10 @@ public class Instrument1 extends Instrument{
     adsr.set(20::ms, 20::ms, 0.7, release);
     
     SinOsc main => Envelope e => rev;
-    0.8 => main.gain;
+    //1 => main.gain;
     
     SinOsc first => Envelope e1 => rev;
-    0.8 => first.gain;
+    //1 => first.gain;
     
     fun void play(string notes[])
     {
