@@ -2,6 +2,7 @@ const spawn = require("child_process").spawn;
 
 const child = spawn("chuck", [
 	"../../util/chuck/fileReader.ck",
+	"../../util/chuck/recorder.ck",
 	"../../instruments/instrument-superclass.ck",
 	"../../instruments/instrument1.ck",
 	"main.ck"

@@ -40,28 +40,28 @@ function createRepeatingArpGen(notes){
 
 function createRow(time, freq, dur, mode){
 	let row = [];
-	row.push(util.round(time, 5));
+	row.push(time);
 	row.push(freq);
-	row.push(util.round(dur, 5));
+	row.push(dur);
 	row.push(mode);
 	return row.join(" ");
 }
 
 // first instrument
 
-const bar = 2;
-const length = 16;
+const bar = 2.5;
+const length = 32;
 
 (function(){
-	const C = ["c4", "e4", "g4", "c5"];
-	const F = ["f4", "a4", "c5", "f5"];
+	const C = ["c3", "e3", "g3", "c4"];
+	const F = ["f3", "a3", "c4", "f4"];
 
 	var result = [];
 	var arp1 = createNonRepeatingArpGen(C);
 	var arp2 = createRepeatingArpGen(F);
 
 
-	for(let i = 0; i < length*16; i++){
+	for(let i = 0; i < (length - 4)*16; i++){
 		let row;
 		if((i % 32) < 16){
 			row = createRow(i*bar/16, arp1(), bar/16, random(1));
@@ -71,9 +71,9 @@ const length = 16;
 		result.push(row);
 	}
 
-	result.push(length*bar);
+	result.push((length + 1)*bar);
 
-	fs.writeFileSync("test.txt", result.join("\r\n"), "utf8");
+	fs.writeFileSync("test.score", result.join("\r\n"), "utf8");
 })();
 
 //second instrument
@@ -81,12 +81,12 @@ const length = 16;
 (function(){
 
 	var result = [];
-	var arp1 = createNonRepeatingArpGen(["c3", "d3", "e3", "g3", "b3"]);
-	var arp2 = createNonRepeatingArpGen(["c3", "f3", "a3"]);
+	var arp1 = createNonRepeatingArpGen(["c4", "d4", "e4", "g4", "b4"]);
+	var arp2 = createNonRepeatingArpGen(["c4", "f4", "a4", "c5"]);
 
 	//result.push("0");
 
-	for(let i = 0; i < length; i++){
+	for(let i = 4; i < length; i++){
 		if(i % 2){
 			result.push(
 				createRow(i*bar, arp2(), bar, random(1))
@@ -100,7 +100,44 @@ const length = 16;
 		}
 	}
 
-	result.push(length*bar);
+	result.push((length + 1)*bar);
 
-	fs.writeFileSync("test2.txt", result.join("\r\n"), "utf8");
+	fs.writeFileSync("test2.score", result.join("\r\n"), "utf8");
+})();
+
+//third instrument
+
+(function(){
+
+	var result = [];
+
+	var firstHalf = Math.floor(length/2);
+
+
+	//result.push("0");
+
+	for(let i = 8; i < firstHalf; i++){
+		if(i % 2){
+			result.push(
+				createRow(i*bar, util.getFreq("f2"), bar, random(1))
+			);
+		}else{
+			result.push(
+				createRow(i*bar, util.getFreq("c2"), bar, random(1))
+			);
+		}
+	}
+
+	for(let i = firstHalf; i < length - 2; i++){
+		let maybe = random(1);
+		let note = i % 2 ? "f2" : "c2";
+		result.push(
+			createRow(i*bar, util.getFreq(note), bar/4, maybe),
+			createRow(i*bar + bar/4, util.getFreq(note), 3*bar/4, 1 - maybe)
+		);
+
+	}
+	result.push((length + 1)*bar);
+
+	fs.writeFileSync("test3.score", result.join("\r\n"), "utf8");
 })();
