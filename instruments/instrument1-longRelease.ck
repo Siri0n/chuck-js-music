@@ -1,9 +1,10 @@
-public class Instrument1 extends Instrument{
+public class Instrument1LR extends Instrument{
     
-    20::ms => dur release;
+    20::ms => dur attack;
+    20::ms => dur decay;
+    200::ms => dur baseRelease;
     PRCRev rev => ADSR adsr => outlet;
     0.02 => rev.mix;
-    adsr.set(20::ms, 20::ms, 0.7, release);
     
     SinOsc main => Envelope e => rev;
     //1 => main.gain;
@@ -25,6 +26,11 @@ public class Instrument1 extends Instrument{
     }
 
     fun void playNote(float freq, dur duration, int mode){
+    	baseRelease => dur release;
+    	if(duration < attack + decay + release){
+    		duration - attack - decay => release;
+    	}
+    	adsr.set(attack, decay, 0.7, release);
         if(mode){
             freq*2 => main.freq;
             freq => first.freq;

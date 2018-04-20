@@ -60,3 +60,4 @@ typings/
 
 **/*.score
 **/*.wav
+**/*.mp3
