@@ -21,10 +21,20 @@ public class Instrument1 extends Instrument{
         Std.atof(notes[1]) => float freq;
         Std.atof(notes[2]) * 1::second => dur d;
         Std.atoi(notes[3]) => int mode;
-        spork ~ playNote(freq, d, mode);
+        if(notes.size() == 5){
+             Std.atof(notes[4]) * 1::second => dur rel;
+             spork ~ playNote(freq, d, mode, rel);
+        }else{
+            spork ~ playNote(freq, d, mode);
+        }
     }
 
     fun void playNote(float freq, dur duration, int mode){
+        return playNote(freq, duration, mode, release);
+    }
+
+    fun void playNote(float freq, dur duration, int mode, dur rel){
+        adsr.set(20::ms, 20::ms, 0.7, rel);
         if(mode){
             freq*2 => main.freq;
             freq => first.freq;
@@ -38,9 +48,9 @@ public class Instrument1 extends Instrument{
         1 => e1.target;
         duration => e.duration => e1.duration;
         adsr.keyOn();
-        duration - release => now;
+        duration - rel => now;
         adsr.keyOff();
-        release => now;
+        rel => now;
     }
 
     fun void mix(float value){

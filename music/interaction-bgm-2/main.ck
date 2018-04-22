@@ -11,7 +11,7 @@ Instrument1 instr3 => d;
 0.3 => instr2.gain;
 0.3 => instr3.gain;
 
-0.1 => instr3.mix;
+0.05 => instr3.mix;
 
 1 => d.slopeAbove;
 0.5 => d.slopeBelow;

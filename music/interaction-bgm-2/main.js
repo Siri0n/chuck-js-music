@@ -1,7 +1,7 @@
 var fs = require("fs");
 var util = require("../../util/js/util");
 var seedrandom = require("seedrandom");
-var rng = seedrandom("tits2");
+var rng = seedrandom("elephant");
 
 function random(min, max){
 	if(max === undefined){
@@ -17,43 +17,19 @@ function createArpGen(notes){
 	}
 }
 
-function createNonRepeatingArpGen(notes){
-	var last = Infinity;
-	return function(){
-		var n = random(notes.length - 2);
-		(n >= last) && n++;
-		last = n;
-		return util.getFreq(notes[n]);
-	}
-}
 
-function createRepeatingArpGen(notes){
-	var last = random(notes.length - 1);
-	var secondLast = -1;
-	return function(){
-		var n;
-		if(last != secondLast || rng() < 0.6){
-			n = last;
-		}else{
-			n = random(notes.length - 1);
-		}
-		secondLast = last;
-		last = n;
-		return util.getFreq(notes[n]);
-	}
-}
-
-function createRow(time, freq, dur, mode){
+function createRow(time, freq, dur, mode, fade){
 	let row = [];
 	row.push(time);
 	row.push(freq);
 	row.push(dur);
 	row.push(mode);
+	fade && row.push(dur/2);
 	return row.join(" ");
 }
 
 const bar = 1.6;
-const length = 64;
+const length = 62;
 
 (function(){
 	const n = 8;
@@ -85,7 +61,7 @@ const length = 64;
 				(i + j/n)*bar,
 				arp(),
 				bar/n,
-				random(1) 
+				random(1)
 			));
 		}
 	}
@@ -95,46 +71,49 @@ const length = 64;
 	fs.writeFileSync("2.score", result.join("\r\n"), "utf8");
 })();
 
-function playRhythm(time, rhythm, bar, gen){
+function playMelody(time, melody, bar, gen){
 	var result = [];
-	for(let dur of rhythm){
-		if(dur > 0){
+	for(let note of melody){
+		let dur = note.dur*bar;
+		if(note.type){
+			let freq = gen[note.type]();
 			result.push(createRow(
-				time, 
-				gen(), 
-				dur*bar, 
-				random(1)
+				time,
+				freq,
+				dur,
+				random(1),
+				note.fade
 			));
-			time += dur*bar;
-		}else{
-			time -= dur*bar;
 		}
+		time += dur;
 	}
 	return [time, result];
 }
 
 (function(){
-	const rhythms = [
-		[1. -1],
-		[1],
-		[1],
-		[0.75, 0.25],
-		[0.5, -0.5],
-		[0.5, 0.5],
-		[0.5, 0.5],
-		[0.25, 0.75],
-		[0.25, 0.25, 0.5]
+	const melodies = [
+		[
+			{dur: 1, type: "t"},
+			{dur: 0.5, type: "d"},
+			{dur: 0.5, type: "s"},
+			{dur: 1, type: "t", fade: true},
+			{dur: 1}
+		]
 	];
 	var result = [];
-	var arp = createArpGen(["c4", "d4", "e4", "g4", "a4", "c5", "d5"]);
+	var gen = {
+		t: createArpGen(["c4", "e4", "g4", "c5"]),
+		d: createArpGen(["g4", "b4", "d5", "g5"]),
+		s: createArpGen(["f4", "a4", "c5", "f5"])
+	}
 	const startTime = 4*bar;
-	const endTime = (length + 2)*bar;
+	const endTime = (length + 3)*bar;
 	var time = startTime;
-	var melody;
+	var fragment;
 	while(time < endTime){
-		let rhythm = rhythms[random(rhythms.length - 1)];
-		[time, melody] = playRhythm(time, rhythm, bar*2, arp);
-		result = result.concat(melody);
+		let melody = melodies[random(melodies.length - 1)];
+		[time, fragment] = playMelody(time, melody, bar*2, gen);
+		result = result.concat(fragment);
 	}
 
 	result.push(time + bar);
